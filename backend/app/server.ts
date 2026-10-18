@@ -17,7 +17,15 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-const allowedFrontendOrigin = process.env.FRONTEND_ORIGIN?.replace(/\/+$/, '');
+const configuredFrontendOrigin = process.env.FRONTEND_ORIGIN?.trim();
+const allowedFrontendOrigin = (() => {
+  if (!configuredFrontendOrigin) return undefined;
+  try {
+    return new URL(configuredFrontendOrigin).origin;
+  } catch {
+    return configuredFrontendOrigin.replace(/\/+$/, '');
+  }
+})();
 app.use((req: Request, res: Response, next: Function) => {
   const requestOrigin = req.headers.origin;
   if (allowedFrontendOrigin && requestOrigin === allowedFrontendOrigin) {
