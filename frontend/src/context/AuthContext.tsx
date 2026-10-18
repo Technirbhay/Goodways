@@ -37,6 +37,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_USER_KEY = 'goodways_auth_user';
 const AUTH_TOKEN_KEY = 'goodways_auth_token';
+const AUTH_VERSION_KEY = 'goodways_auth_version';
+const AUTH_VERSION = '2026-10-render-jwt-v2';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -53,10 +55,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const savedUser = localStorage.getItem(AUTH_USER_KEY);
       const savedToken = localStorage.getItem(AUTH_TOKEN_KEY);
-      if (savedUser && savedToken) {
+      const savedAuthVersion = localStorage.getItem(AUTH_VERSION_KEY);
+      if (savedUser && savedToken && savedAuthVersion === AUTH_VERSION) {
         setCurrentUser(JSON.parse(savedUser));
         setToken(savedToken);
       } else {
+        // Tokens from before the Render deployment are signed with a different
+        // secret. Remove that stale session before the first protected request.
+        localStorage.removeItem(AUTH_USER_KEY);
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.setItem(AUTH_VERSION_KEY, AUTH_VERSION);
         // Default to Demo Citizen for an immediate seamless first experience
         const defaultCitizen: AppUser = {
           id: 'user-citizen-1',
@@ -101,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(data.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
       localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      localStorage.setItem(AUTH_VERSION_KEY, AUTH_VERSION);
       setIsAuthModalOpen(false);
       return { success: true };
     } catch (err: any) {
@@ -143,6 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(data.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
       localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      localStorage.setItem(AUTH_VERSION_KEY, AUTH_VERSION);
       setIsAuthModalOpen(false);
       return { success: true, message: data.message };
     } catch (err: any) {
@@ -155,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     localStorage.removeItem(AUTH_USER_KEY);
     localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_VERSION_KEY);
   };
 
   const quickDemoLogin = async (email: string): Promise<boolean> => {
