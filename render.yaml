@@ -2,14 +2,11 @@ services:
   - type: web
     name: goodways-api
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /healthz
-    disk:
-      name: goodways-data
-      mountPath: /opt/render/project/src/backend/app/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
