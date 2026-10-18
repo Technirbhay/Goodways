@@ -539,6 +539,16 @@ app.get('/api/cases/:id', (req: Request, res: Response): void => {
 
 // POST /api/cases - Create new case from citizen report
 app.post('/api/cases', (req: Request, res: Response) => {
+  const auth = getAuthenticatedUser(req);
+  if (!auth || auth.pendingApproval) {
+    res.status(auth?.pendingApproval ? 403 : 401).json({ error: 'A valid citizen login is required to submit a complaint' });
+    return;
+  }
+  if (auth.user.role !== 'citizen') {
+    res.status(403).json({ error: 'Only citizen accounts can submit road complaints' });
+    return;
+  }
+
   const cases = loadCases();
   const payload = req.body;
 
@@ -550,8 +560,8 @@ app.post('/api/cases', (req: Request, res: Response) => {
     createdAt: now,
     updatedAt: now,
     status: payload.status || 'Submitted',
-    citizenName: payload.citizenName || 'Anonymous Citizen',
-    citizenEmail: payload.citizenEmail || '',
+    citizenName: auth.user.name || payload.citizenName || 'Citizen Reporter',
+    citizenEmail: auth.user.email,
     citizenDescription: payload.citizenDescription || '',
     roadName: payload.roadName || payload.location?.address || 'Unspecified Roadway',
     originalImageUrl: payload.originalImageUrl,
@@ -593,6 +603,11 @@ app.post('/api/cases', (req: Request, res: Response) => {
 
 // PATCH /api/cases/:id - Update case status, assignment, priority, or notes
 app.patch('/api/cases/:id', (req: Request, res: Response): void => {
+  const auth = getAuthenticatedUser(req);
+  if (!auth || auth.pendingApproval || auth.user.role !== 'official') {
+    res.status(auth?.pendingApproval ? 403 : auth ? 403 : 401).json({ error: 'Only an approved authority can update cases' });
+    return;
+  }
   const cases = loadCases();
   const idx = cases.findIndex((c: any) => c.id === req.params.id);
   if (idx === -1) {
@@ -634,6 +649,11 @@ app.patch('/api/cases/:id', (req: Request, res: Response): void => {
 
 // POST /api/cases/:id/repair-evidence - Upload repair stage photograph & progress
 app.post('/api/cases/:id/repair-evidence', (req: Request, res: Response): void => {
+  const auth = getAuthenticatedUser(req);
+  if (!auth || auth.pendingApproval || auth.user.role !== 'official') {
+    res.status(auth?.pendingApproval ? 403 : auth ? 403 : 401).json({ error: 'Only an approved authority can add repair evidence' });
+    return;
+  }
   const cases = loadCases();
   const idx = cases.findIndex((c: any) => c.id === req.params.id);
   if (idx === -1) {
@@ -683,6 +703,11 @@ app.post('/api/cases/:id/repair-evidence', (req: Request, res: Response): void =
 
 // POST /api/cases/:id/verify - Verify repair and complete case sign-off
 app.post('/api/cases/:id/verify', (req: Request, res: Response): void => {
+  const auth = getAuthenticatedUser(req);
+  if (!auth || auth.pendingApproval || auth.user.role !== 'official') {
+    res.status(auth?.pendingApproval ? 403 : auth ? 403 : 401).json({ error: 'Only an approved authority can verify repairs' });
+    return;
+  }
   const cases = loadCases();
   const idx = cases.findIndex((c: any) => c.id === req.params.id);
   if (idx === -1) {

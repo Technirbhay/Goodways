@@ -5,6 +5,7 @@ import { RoadGoogleMap } from './RoadGoogleMap';
 import { DamageCanvas } from './DamageCanvas';
 import { apiUrl } from '../api';
 import { calculateAllMeasurements } from '../utils/geometry';
+import { useAuth } from '../context/AuthContext';
 import {
   ArrowLeft,
   Building,
@@ -41,6 +42,11 @@ export const AdminCaseDetail: React.FC<AdminCaseDetailProps> = ({
   onOpenGovtPortal,
   mapsApiKey,
 }) => {
+  const { currentUser, token } = useAuth();
+  const authHeaders = {
+    Authorization: `Bearer ${token || ''}`,
+    'X-User-Email': currentUser?.email || '',
+  };
   // Status transition form state
   const [selectedStatus, setSelectedStatus] = useState<CaseStatus>(roadCase.status);
   const [selectedDept, setSelectedDept] = useState<string>(roadCase.assignedDepartment || departments[0]?.name || '');
@@ -81,7 +87,7 @@ export const AdminCaseDetail: React.FC<AdminCaseDetailProps> = ({
     try {
       const res = await fetch(apiUrl(`/api/cases/${roadCase.id}`), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           status: selectedStatus,
           assignedDepartment: selectedDept,
@@ -115,7 +121,7 @@ export const AdminCaseDetail: React.FC<AdminCaseDetailProps> = ({
     try {
       const res = await fetch(apiUrl(`/api/cases/${roadCase.id}/repair-evidence`), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           stage: repairStage,
           imageUrl: repairPhotoUrl,
@@ -144,7 +150,7 @@ export const AdminCaseDetail: React.FC<AdminCaseDetailProps> = ({
     try {
       const res = await fetch(apiUrl(`/api/cases/${roadCase.id}/verify`), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           verifierName,
           verifierBadge,

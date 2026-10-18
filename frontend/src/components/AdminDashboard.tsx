@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RoadCase, Department, CaseStatus } from '../types';
 import { RoadGoogleMap } from './RoadGoogleMap';
 import { apiUrl } from '../api';
+import { useAuth } from '../context/AuthContext';
 import {
   Building,
   CheckCircle2,
@@ -39,6 +40,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onSelectCase,
   mapsApiKey,
 }) => {
+  const { currentUser, token } = useAuth();
+  const authHeaders = {
+    Authorization: `Bearer ${token || ''}`,
+    'X-User-Email': currentUser?.email || '',
+  };
   const [activeTab, setActiveTab] = useState<'all' | 'priority' | 'verification' | 'in_progress' | 'city_map' | 'authority_management'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>('all');
@@ -52,7 +58,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const fetchAuthorities = async () => {
     setIsLoadingAuth(true);
     try {
-      const res = await fetch(apiUrl('/api/admin/authorities'));
+      const res = await fetch(apiUrl('/api/admin/authorities'), { headers: authHeaders });
       if (res.ok) {
         const data = await res.json();
         setAuthorities(data);
@@ -72,7 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       const res = await fetch(apiUrl('/api/admin/authorities/approve'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ userId, approverName: 'Chief Super Admin' }),
       });
       const data = await res.json();
@@ -90,7 +96,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       const res = await fetch(apiUrl('/api/admin/authorities/revoke'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ userId, approverName: 'Chief Super Admin' }),
       });
       const data = await res.json();

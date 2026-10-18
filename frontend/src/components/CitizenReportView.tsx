@@ -74,7 +74,7 @@ export const CitizenReportView: React.FC<CitizenReportViewProps> = ({
   const [captureTime, setCaptureTime] = useState<string | null>(null);
 
   // Citizen input form
-  const { currentUser } = useAuth();
+  const { currentUser, token, openAuthModal } = useAuth();
   const [citizenName, setCitizenName] = useState<string>(currentUser?.name || '');
   const [citizenEmail, setCitizenEmail] = useState<string>(currentUser?.email || '');
   const [citizenDescription, setCitizenDescription] = useState<string>('');
@@ -510,6 +510,12 @@ export const CitizenReportView: React.FC<CitizenReportViewProps> = ({
     e.preventDefault();
     if (!selectedImage) return;
 
+    if (!currentUser || !token || token === 'tok-default-demo') {
+      setAnalysisError('Please sign in as a citizen before submitting a complaint.');
+      openAuthModal('login', 'citizen');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const overallSeverity: DamageSeverity = damageRegions.some((r) => r.severity === 'critical')
@@ -548,7 +554,11 @@ export const CitizenReportView: React.FC<CitizenReportViewProps> = ({
     try {
       const res = await fetch(apiUrl('/api/cases'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-User-Email': currentUser.email,
+        },
         body: JSON.stringify(payload),
       });
 
