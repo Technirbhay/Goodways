@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
+  authorityPortalEnabled: boolean;
   currentRole: 'citizen' | 'official';
   onRoleChange: (role: 'citizen' | 'official') => void;
   activeView: string;
@@ -33,6 +34,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  authorityPortalEnabled,
   currentRole,
   onRoleChange,
   activeView,
@@ -190,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <User size={13} />
               <span className="hidden sm:inline">Citizen</span>
             </button>
-            <button
+            {authorityPortalEnabled && <button
               onClick={() => onRoleChange('official')}
               className={`flex items-center gap-1 px-2 py-1 rounded-lg transition ${
                 currentRole === 'official'
@@ -201,7 +203,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Shield size={13} />
               <span className="hidden sm:inline">Authority</span>
-            </button>
+            </button>}
           </div>
 
           {/* Authentication System Section */}
@@ -268,7 +270,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   {/* Actions */}
                   <div className="space-y-1 pt-1">
-                    <button
+                    {authorityPortalEnabled && <button
                       onClick={() => {
                         setIsProfileMenuOpen(false);
                         openAuthModal('login', currentUser.role === 'citizen' ? 'official' : 'citizen');
@@ -277,7 +279,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <Shield size={13} className="text-[#79583A]" />
                       <span>Switch to {currentUser.role === 'citizen' ? 'Authority Portal' : 'Citizen Portal'}</span>
-                    </button>
+                    </button>}
 
                     <button
                       onClick={() => {

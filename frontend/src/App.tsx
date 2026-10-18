@@ -20,6 +20,7 @@ import { apiUrl } from './api';
 import { Compass, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 export default function App() {
+  const authorityPortalEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_AUTHORITY_PORTAL === 'true';
   const { currentUser, token, logout } = useAuth();
   const [currentRole, setCurrentRole] = useState<'citizen' | 'official'>('citizen');
   const [activeView, setActiveView] = useState<string>('report');
@@ -171,6 +172,7 @@ export default function App() {
 
   // Navigation handlers
   const handleRoleChange = (newRole: 'citizen' | 'official') => {
+    if (newRole === 'official' && !authorityPortalEnabled) return;
     setCurrentRole(newRole);
     if (newRole === 'official') {
       setActiveView(selectedCaseId ? 'admin_case_detail' : 'admin_dashboard');
@@ -215,6 +217,7 @@ export default function App() {
     <div className="min-h-screen bg-[#F7F2E8] text-[#302A23] flex flex-col font-sans">
       {/* Top Application Navbar */}
       <Navbar
+        authorityPortalEnabled={authorityPortalEnabled}
         currentRole={currentRole}
         onRoleChange={handleRoleChange}
         activeView={activeView}
@@ -350,6 +353,7 @@ export default function App() {
       {/* Citizen & Civil Authority Authentication Modal */}
       <AuthModal
         departments={departments}
+        authorityPortalEnabled={authorityPortalEnabled}
         onRoleChanged={handleRoleChange}
       />
 

@@ -39,6 +39,7 @@ const AUTH_USER_KEY = 'goodways_auth_user';
 const AUTH_TOKEN_KEY = 'goodways_auth_token';
 const AUTH_VERSION_KEY = 'goodways_auth_version';
 const AUTH_VERSION = '2026-10-render-jwt-v2';
+const AUTHORITY_PORTAL_ENABLED = import.meta.env.DEV || import.meta.env.VITE_ENABLE_AUTHORITY_PORTAL === 'true';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -56,8 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUser = localStorage.getItem(AUTH_USER_KEY);
       const savedToken = localStorage.getItem(AUTH_TOKEN_KEY);
       const savedAuthVersion = localStorage.getItem(AUTH_VERSION_KEY);
-      if (savedUser && savedToken && savedAuthVersion === AUTH_VERSION) {
-        setCurrentUser(JSON.parse(savedUser));
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      if (savedUser && savedToken && savedAuthVersion === AUTH_VERSION && (AUTHORITY_PORTAL_ENABLED || parsedUser?.role !== 'official')) {
+        setCurrentUser(parsedUser);
         setToken(savedToken);
       } else {
         // Tokens from before the Render deployment are signed with a different

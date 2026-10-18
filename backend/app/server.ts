@@ -981,6 +981,7 @@ const VALID_ADMIN_KEYS = (process.env.ADMIN_INVITE_CODE || '')
   .split(',')
   .map((key) => key.trim())
   .filter(Boolean);
+const authorityPortalEnabled = process.env.AUTHORITY_PORTAL_ENABLED === 'true' || process.env.NODE_ENV !== 'production';
 
 // Register new Citizen or Authority user
 app.post('/api/auth/register', (req: Request, res: Response): void => {
@@ -1003,6 +1004,10 @@ app.post('/api/auth/register', (req: Request, res: Response): void => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    if (role === 'official' && !authorityPortalEnabled) {
+      res.status(403).json({ error: 'Authority registration is disabled on the public deployment.' });
+      return;
+    }
     const users = loadUsers();
 
     if (users.some((u: any) => u.email.toLowerCase() === cleanEmail)) {
@@ -1100,6 +1105,11 @@ app.post('/api/auth/login', (req: Request, res: Response): void => {
 
     if (role !== 'citizen' && role !== 'official') {
       res.status(400).json({ error: 'Select either the Citizen or Authority portal before signing in' });
+      return;
+    }
+
+    if (role === 'official' && !authorityPortalEnabled) {
+      res.status(403).json({ error: 'Authority login is restricted to the local administrator environment.' });
       return;
     }
 

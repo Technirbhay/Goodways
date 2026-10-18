@@ -20,10 +20,11 @@ import {
 
 interface AuthModalProps {
   departments: Department[];
+  authorityPortalEnabled: boolean;
   onRoleChanged?: (role: UserRole) => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({ departments, authorityPortalEnabled, onRoleChanged }) => {
   const {
     currentUser,
     isAuthModalOpen,
@@ -57,14 +58,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
 
   useEffect(() => {
     setActiveTab(authModalTab);
-    setSelectedRole(authModalRole);
+    setSelectedRole(authorityPortalEnabled ? authModalRole : 'citizen');
     setError(null);
     setSuccessMsg(null);
     setPendingApprovalNotice(null);
     if (departments.length > 0 && !department) {
       setDepartment(departments[0].name);
     }
-  }, [isAuthModalOpen, authModalTab, authModalRole, departments]);
+  }, [isAuthModalOpen, authModalTab, authModalRole, departments, authorityPortalEnabled]);
 
   if (!isAuthModalOpen) return null;
 
@@ -194,7 +195,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
               <User size={14} className={selectedRole === 'citizen' ? 'text-[#79583A]' : ''} />
               <span>Citizen Portal</span>
             </button>
-            <button
+            {authorityPortalEnabled && <button
               type="button"
               onClick={() => setSelectedRole('official')}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl transition ${
@@ -205,7 +206,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
             >
               <Shield size={14} className={selectedRole === 'official' ? 'text-[#2F7657]' : ''} />
               <span>Civil Authority (PWD / NHAI)</span>
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -499,7 +500,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
                 <div className="text-[10px] text-[#746A5C] truncate">citizen@goodways.org</div>
               </button>
 
-              <button
+              {authorityPortalEnabled && <button
                 type="button"
                 onClick={() => handleDemoClick('inspector@pwd.gov.in', 'official')}
                 className="p-2.5 rounded-xl border border-[#2F7657]/30 bg-[#2F7657]/10 hover:bg-[#2F7657]/20 text-left transition"
@@ -509,7 +510,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
                   <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#2F7657] text-white">PWD Authority</span>
                 </div>
                 <div className="text-[10px] text-[#746A5C] truncate">inspector@pwd.gov.in</div>
-              </button>
+              </button>}
             </div>
           </div>
         </div>
