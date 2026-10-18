@@ -120,16 +120,60 @@ app.get('/api/admin/audit-logs', (req: Request, res: Response) => {
   res.json(logs);
 });
 
+const DEFAULT_USERS = [
+  {
+    id: 'user-citizen-1',
+    name: 'Rahul Sharma',
+    email: 'citizen@goodways.org',
+    password: 'citizen123',
+    role: 'citizen',
+    phone: '+91 98765 43210',
+    designation: 'Active Citizen Reporter',
+    approvalStatus: 'approved',
+    createdAt: '2026-01-15T09:00:00.000Z'
+  },
+  {
+    id: 'user-official-1',
+    name: 'Er. Vikram Malhotra',
+    email: 'inspector@pwd.gov.in',
+    password: 'authority123',
+    role: 'official',
+    phone: '+91 98123 45678',
+    department: 'Municipal Roads & Highways Division',
+    badgeNumber: 'PWD-EXEC-749',
+    designation: 'Chief Super Admin & Senior Executive Engineer',
+    approvalStatus: 'approved',
+    isSuperAdmin: true,
+    createdAt: '2026-01-10T08:30:00.000Z'
+  },
+  {
+    id: 'user-official-2',
+    name: 'Priya Sundaram',
+    email: 'nhai.officer@nhai.gov.in',
+    password: 'authority123',
+    role: 'official',
+    phone: '+91 98234 56789',
+    department: 'Civil Engineering & Structural Infrastructure',
+    badgeNumber: 'NHAI-INSP-204',
+    designation: 'NHAI Highway Safety Inspector',
+    approvalStatus: 'approved',
+    isSuperAdmin: false,
+    authorizedBy: 'Chief Super Admin',
+    createdAt: '2026-01-12T10:15:00.000Z'
+  }
+];
+
 function loadUsers(): any[] {
   try {
     if (fs.existsSync(USERS_FILE)) {
       const data = fs.readFileSync(USERS_FILE, 'utf-8');
-      return JSON.parse(data);
+      const users = JSON.parse(data);
+      if (Array.isArray(users) && users.length > 0) return users;
     }
   } catch (err) {
     console.error('Error loading users.json:', err);
   }
-  return [];
+  return DEFAULT_USERS.map((user) => ({ ...user }));
 }
 
 function saveUsers(users: any[]) {
@@ -1118,12 +1162,23 @@ app.get('/api/auth/me', (req: Request, res: Response): void => {
     return;
   }
 
+  const token = authHeader.slice('Bearer '.length).trim();
+  let decoded: any;
+  try {
+    decoded = jwt.verify(token, JWT_SECRET) as any;
+  } catch {
+    res.status(401).json({ error: 'Invalid or expired token' });
+    return;
+  }
+
   const users = loadUsers();
-  const user = users[0];
+  const user = users.find(
+    (candidate: any) => candidate.id === decoded.id || candidate.email.toLowerCase() === String(decoded.email || '').toLowerCase()
+  );
   if (user) {
     res.json({ user: sanitizeUser(user) });
   } else {
-    res.status(404).json({ error: 'User not found' });
+    res.status(401).json({ error: 'Session user no longer exists' });
   }
 });
 
