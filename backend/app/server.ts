@@ -1098,6 +1098,11 @@ app.post('/api/auth/login', (req: Request, res: Response): void => {
       return;
     }
 
+    if (role !== 'citizen' && role !== 'official') {
+      res.status(400).json({ error: 'Select either the Citizen or Authority portal before signing in' });
+      return;
+    }
+
     const cleanEmail = email.trim().toLowerCase();
     const users = loadUsers();
 
@@ -1112,8 +1117,8 @@ app.post('/api/auth/login', (req: Request, res: Response): void => {
 
     const matched = users[idx];
 
-    // Optional role check
-    if (role && matched.role !== role) {
+    // Enforce portal separation: credentials from one portal cannot be used in the other.
+    if (matched.role !== role) {
       res.status(403).json({
         error: `This account is registered as a ${matched.role}. Please log in under the ${matched.role} portal.`
       });

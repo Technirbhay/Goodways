@@ -25,7 +25,7 @@ interface AuthContextType {
     adminInviteCode?: string;
   }) => Promise<{ success: boolean; error?: string; pendingApproval?: boolean; message?: string }>;
   logout: () => void;
-  quickDemoLogin: (email: string) => Promise<boolean>;
+  quickDemoLogin: (email: string, role: UserRole) => Promise<boolean>;
   isAuthModalOpen: boolean;
   authModalTab: 'login' | 'register';
   authModalRole: UserRole;
@@ -168,9 +168,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(AUTH_VERSION_KEY);
   };
 
-  const quickDemoLogin = async (email: string): Promise<boolean> => {
+  const quickDemoLogin = async (email: string, role: UserRole): Promise<boolean> => {
     const password = email.includes('citizen') ? 'citizen123' : 'authority123';
-    const res = await login(email, password);
+    const res = await login(email, password, role);
     return res.success;
   };
 

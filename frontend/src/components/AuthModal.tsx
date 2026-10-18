@@ -138,7 +138,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ departments, onRoleChanged
     setError(null);
     setSelectedRole(role);
     try {
-      const ok = await quickDemoLogin(demoEmail);
+      const ok = await quickDemoLogin(demoEmail, role);
       if (ok) {
         setSuccessMsg(`Signed in as ${role === 'citizen' ? 'Citizen' : 'Civil Authority'}`);
         if (onRoleChanged) onRoleChanged(role);
