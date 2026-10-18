@@ -17,7 +17,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-const allowedFrontendOrigin = process.env.FRONTEND_ORIGIN;
+const allowedFrontendOrigin = process.env.FRONTEND_ORIGIN?.replace(/\/+$/, '');
 app.use((req: Request, res: Response, next: Function) => {
   const requestOrigin = req.headers.origin;
   if (allowedFrontendOrigin && requestOrigin === allowedFrontendOrigin) {
