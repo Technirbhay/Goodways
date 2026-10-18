@@ -20,7 +20,7 @@ import { apiUrl } from './api';
 import { Compass, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 export default function App() {
-  const { currentUser, token } = useAuth();
+  const { currentUser, token, logout } = useAuth();
   const [currentRole, setCurrentRole] = useState<'citizen' | 'official'>('citizen');
   const [activeView, setActiveView] = useState<string>('report');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
@@ -55,21 +55,25 @@ export default function App() {
   // Fetch initial cases, departments, and public config from backend
   const fetchCasesAndDepartments = async () => {
     try {
-      const authHeaders: Record<string, string> = currentUser
+      const hasValidSession = Boolean(currentUser && token && token !== 'tok-default-demo');
+      const authHeaders: Record<string, string> = hasValidSession
         ? {
             Authorization: `Bearer ${token || ''}`,
-            'X-User-Email': currentUser.email,
+            'X-User-Email': currentUser?.email || '',
           }
         : {};
       const [casesRes, deptsRes, configRes] = await Promise.all([
-        fetch(apiUrl('/api/cases'), { headers: authHeaders }),
+        hasValidSession ? fetch(apiUrl('/api/cases'), { headers: authHeaders }) : Promise.resolve(null),
         fetch(apiUrl('/api/departments')),
         fetch(apiUrl('/api/config')).catch(() => null),
       ]);
 
-      if (casesRes.ok) {
+      if (casesRes?.ok) {
         const casesData = await casesRes.json();
         setCases(casesData);
+      } else if (casesRes?.status === 401) {
+        logout();
+        setCases([]);
       }
       if (deptsRes.ok) {
         const deptsData = await deptsRes.json();
@@ -95,7 +99,8 @@ export default function App() {
       const pending = drafts.filter((d) => d.syncStatus === 'pending_sync' || d.syncStatus === 'failed');
       setOfflineDraftsCount(pending.length);
 
-      if (navigator.onLine && pending.length > 0) {
+      const hasValidSession = Boolean(currentUser && token && token !== 'tok-default-demo');
+      if (navigator.onLine && hasValidSession && pending.length > 0) {
         for (const draft of pending) {
           try {
             await updateDraftStatus(draft.localId, 'uploading');
