@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered user profile storing authentication and role data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["citizen", "official"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "RoadCase": {
+      "title": "RoadCase",
+      "description": "Municipal road damage complaint and repair tracking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "citizenId": { "type": "string" },
+        "citizenEmail": { "type": "string" },
+        "citizenName": { "type": "string" },
+        "roadName": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["Reported", "Triage", "Assigned", "Repairs In Progress", "Resolved"]
+        },
+        "overallSeverity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "priorityScore": { "type": "number" },
+        "suggestedDepartment": { "type": "string" },
+        "assignedDepartment": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "citizenId", "roadName", "status", "overallSeverity"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Authorized municipal administrator record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document storing role and account settings"
+    },
+    "/cases/{caseId}": {
+      "schema": "RoadCase",
+      "description": "Public works road damage and repair tracking cases"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Authorized authority administrator identities"
+    }
+  }
+}

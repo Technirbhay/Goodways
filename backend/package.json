@@ -1,0 +1,25 @@
+{
+  "name": "goodways-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "app/server.ts",
+  "scripts": {
+    "start": "tsx app/server.ts",
+    "test": "node --test tests/auth.test.js",
+    "test:persistence": "node --test tests/persistence.test.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "vite": "^8.3.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2"
+  }
+}

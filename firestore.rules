@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'nirbhayg759@gmail.com')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Admins collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || (
+        isSignedIn() &&
+        request.auth.token.email != null &&
+        request.auth.token.email.lower() == 'nirbhayg759@gmail.com'
+      );
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Public works cases
+    match /cases/{caseId} {
+      // Admin sees ALL data; individual citizen sees ONLY their own published cases!
+      allow get: if isAdmin() || (isSignedIn() && resource.data.citizenId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.citizenId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+        request.resource.data.citizenId == request.auth.uid;
+
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        resource.data.citizenId == request.auth.uid &&
+        request.resource.data.citizenId == resource.data.citizenId
+      );
+
+      allow delete: if isAdmin();
+    }
+  }
+}

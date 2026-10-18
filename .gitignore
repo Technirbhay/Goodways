@@ -1,0 +1,50 @@
+# Dependencies and build output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Environment files and secrets (keep only *.example templates)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*service-account*.json
+*firebase-adminsdk*.json
+
+# Firebase/browser configuration containing project identifiers and API keys
+firebase-applet-config.json
+
+# Runtime data, uploads, logs, and local databases
+backend/app/data/*.json
+!backend/app/data/.gitkeep
+backend/uploads/
+*.log
+*.sqlite
+*.sqlite3
+
+# Tooling and OS files
+.DS_Store
+.aistudio/
+.vercel/
+.render/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

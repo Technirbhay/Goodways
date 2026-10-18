@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: goodways-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    disk:
+      name: goodways-data
+      mountPath: /opt/render/project/src/backend/app/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_FRONTEND
+        value: "false"
+      - key: PORT
+        value: "10000"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_INVITE_CODE
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false

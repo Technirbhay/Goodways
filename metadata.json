@@ -1,0 +1,6 @@
+{
+  "name": "GoodWays",
+  "description": "AI-powered road damage detection, mathematical measurement, and government repair tracking platform.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
