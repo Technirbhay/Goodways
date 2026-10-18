@@ -40,6 +40,7 @@ const AUTH_TOKEN_KEY = 'goodways_auth_token';
 const AUTH_VERSION_KEY = 'goodways_auth_version';
 const AUTH_VERSION = '2026-10-render-jwt-v2';
 const AUTHORITY_PORTAL_ENABLED = import.meta.env.DEV || import.meta.env.VITE_ENABLE_AUTHORITY_PORTAL === 'true';
+const LOCAL_AUTHORITY_KEY = (import.meta.env.VITE_LOCAL_AUTHORITY_KEY as string | undefined)?.trim() || '';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -92,9 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string, role?: UserRole, adminInviteCode?: string) => {
     try {
+      const loginHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (role === 'official' && LOCAL_AUTHORITY_KEY) loginHeaders['X-Local-Authority-Key'] = LOCAL_AUTHORITY_KEY;
       const res = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: loginHeaders,
         body: JSON.stringify({ email, password, role, adminInviteCode }),
       });
 

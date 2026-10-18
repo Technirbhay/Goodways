@@ -1007,6 +1007,10 @@ const VALID_ADMIN_KEYS = (process.env.ADMIN_INVITE_CODE || '')
   .map((key) => key.trim())
   .filter(Boolean);
 const authorityPortalEnabled = process.env.AUTHORITY_PORTAL_ENABLED === 'true' || process.env.NODE_ENV !== 'production';
+const localAuthorityKey = process.env.AUTHORITY_LOCAL_KEY || '';
+function hasLocalAuthorityAccess(req: Request): boolean {
+  return Boolean(localAuthorityKey && req.headers['x-local-authority-key'] === localAuthorityKey);
+}
 
 // Register new Citizen or Authority user
 app.post('/api/auth/register', (req: Request, res: Response): void => {
@@ -1133,7 +1137,7 @@ app.post('/api/auth/login', (req: Request, res: Response): void => {
       return;
     }
 
-    if (role === 'official' && !authorityPortalEnabled) {
+    if (role === 'official' && !authorityPortalEnabled && !hasLocalAuthorityAccess(req)) {
       res.status(403).json({ error: 'Authority login is restricted to the local administrator environment.' });
       return;
     }
