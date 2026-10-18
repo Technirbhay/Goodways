@@ -2,6 +2,11 @@
 
 GoodWays is a full-stack civic intelligence platform that empowers citizens to report road surface potholes with automated metric sizing, precise shoelace geometry, debris exclusion filters, and direct 1-click dispatch to government grievance portals (NHAI, CPGRAMS, State PWD).
 
+## Live deployment
+
+- Frontend: https://technirbhay.github.io/Goodways/
+- Backend API: https://goodways-api-m21g.onrender.com
+
 ---
 
 ## 1. Project Dependencies
